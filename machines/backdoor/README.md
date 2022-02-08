@@ -9,7 +9,11 @@ The IP is 10.10.11.125, I will add it to /etc/hosts:
 Let's start off by enumerating the open ports:
 
 ```bash
-nmap -p- --open -sS -v -n -Pn backdoor.htb -oG allPorts
+$ nmap -p- --open -sS -v -n -Pn backdoor.htb -oG allPorts
+
+# Ports scanned: TCP(65535;1-65535) UDP(0;) SCTP(0;) PROTOCOLS(0;)
+Host: 10.10.11.125 ()   Status: Up
+Host: 10.10.11.125 ()   Ports: 22/open/tcp//ssh///, 80/open/tcp//http///, 1337/open/tcp//waste///   Ignored State: closed (65532)
 ```
   
 It returns ports 22, 80 and 1337 as being open. 
@@ -17,7 +21,7 @@ It returns ports 22, 80 and 1337 as being open.
 I will run a nmap script to list the services and their versions that are running on each open port
   
 ```bash
-nmap -p22,80,1337 -sCV backdoor.htb -oN targeted
+$ nmap -p22,80,1337 -sCV backdoor.htb -oN targeted
 
 PORT     STATE SERVICE VERSION
 22/tcp   open  ssh     OpenSSH 8.2p1 Ubuntu 4ubuntu0.3 (Ubuntu Linux; protocol 2.0)
@@ -52,7 +56,7 @@ Knowing that we are dealing with Wordpress as the CMS, we can try running wpscan
 You will need an API token, which you can get [here](wpscan.com).
 
 ```bash
-wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressive --api-token <token>
+$ wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressive --api-token <token>
 
 [+] ebook-download
  | Location: http://backdoor.htb/wp-content/plugins/ebook-download/
@@ -84,10 +88,10 @@ wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressive 
 We can see that there is a vulnerable plugin called Ebook Download. If we search for it on searchsploit, we fill find file with **id 39575**.
 I will download it on my computer using:
 
-`searchsploit -m 39575`
+`$ searchsploit -m 39575`
 
 If we open the text file, we can see that the plugin is vulnerable to Path Traversal and Local File Inclusion.
-We can list running processes using the path /proc/*pid*/cmdline, where pid is a valid process ID.
+We can list running processes using the path /proc/_pid_/cmdline, where pid is a valid process ID.
 Using a Python script to iterate through the PIDs, we can find which are running.
 
 ```python
