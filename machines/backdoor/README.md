@@ -52,7 +52,10 @@ ID           Response   Lines    Word       Chars       Payload
 000006941:   301        9 L      28 W       315 Ch      "wp-admin"
 ```
 
-Knowing that we are dealing with Wordpress as the CMS, we can try running wpscan to list vulnerable plugins.
+The subdirectory _wp-content_ is not visible to us, _wp-includes_ contains the plugins and themes, although we can't see the contents of the files.
+Playing around with _wp-admin_ there doesn't seem to be any default credentials set.
+
+So, knowing that we are dealing with Wordpress as the CMS, we can try running wpscan to list vulnerable plugins.
 You will need an API token, which you can get [here](wpscan.com).
 
 ```bash
