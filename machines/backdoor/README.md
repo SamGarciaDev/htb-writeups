@@ -2,7 +2,7 @@
 
 ## Enumeration
 
-The IP is 10.10.11.125, I will add it to /etc/hosts:
+The IP is 10.10.11.125, I will add it to _/etc/hosts_:
 
 ![/etc/hosts/ picture](screenshots/etc-hosts.png)
 
@@ -18,7 +18,7 @@ Host: 10.10.11.125 ()   Ports: 22/open/tcp//ssh///, 80/open/tcp//http///, 1337/o
   
 It returns ports 22, 80 and 1337 as being open. 
   
-I will run a nmap script to list the services and their versions that are running on each open port
+I will run a _nmap_ script to list the services and their versions that are running on each open port
   
 ```bash
 $ nmap -p22,80,1337 -sCV backdoor.htb -oN targeted
@@ -39,7 +39,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 If you try to access via browser you will get an innocent website, where you can't do much.
 
-Let's try to list subdirectories using wfuzz:
+Let's try to list subdirectories using _wfuzz_:
 
 ```bash
 wfuzz -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-small.txt -u "backdoor.htb/FUZZ" --hc=404 -c
@@ -55,7 +55,7 @@ ID           Response   Lines    Word       Chars       Payload
 The subdirectory _wp-content_ is not visible to us, _wp-includes_ contains the plugins and themes, although we can't see the contents of the files.
 Playing around with _wp-admin_ there doesn't seem to be any default credentials set.
 
-So, knowing that we are dealing with Wordpress as the CMS, we can try running wpscan to list vulnerable plugins.
+So, knowing that we are dealing with _Wordpress_ as the CMS, we can try running _wpscan_ to list vulnerable plugins.
 You will need an API token, which you can get [here](wpscan.com).
 
 ```bash
@@ -88,12 +88,12 @@ $ wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressiv
 
 ## Foothold
 
-We can see that there is a vulnerable plugin called Ebook Download. If we search for it on searchsploit, we fill find file with **id 39575**.
+We can see that there is a vulnerable plugin called **Ebook Download**. If we search for it on _searchsploit_, we fill find an exploit with **id 39575**.
 I will download it on my computer using:
 
 `$ searchsploit -m 39575`
 
-If we open the text file, we can see that the plugin is vulnerable to Path Traversal and Local File Inclusion.
+If we open the text file, we can see that the plugin is vulnerable to Local File Inclusion.
 We can list running processes using the path /proc/_pid_/cmdline, where pid is a valid process ID.
 Using a Python script to iterate through the PIDs, we can find which are running.
 
@@ -136,7 +136,7 @@ We see that there's a service called gdbserver running on the open port 1337:
 b'/proc/850/cmdline/proc/850/cmdline/proc/850/cmdline/bin/sh\x00-c\x00while true;do su user -c "cd /home/user;gdbserver --once 0.0.0.0:1337 /bin/true;";done\x00<script>window.close()</script>'
 ```
   
-If we look for it on searchsploit we will find a vulnerability with **id 50539**.
+If we look for it on _searchsploit_ we will find a vulnerability with **id 50539**.
 If we run it and follow the instructions provided, we can get a reverse shell as user and view the flag.
 
 ![whoami output](screenshots/foothold.png)
