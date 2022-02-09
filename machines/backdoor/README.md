@@ -88,7 +88,7 @@ $ wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressiv
 
 ## Foothold
 
-We can see that there is a vulnerable plugin called **Ebook Download**. If we search for it on _searchsploit_, we fill find an exploit with **id 39575**.
+We can see that there is a vulnerable version of the plugin **Ebook Download**. If we search for it on _searchsploit_, we fill find an exploit with **id 39575**.
 I will download it on my computer using:
 
 `$ searchsploit -m 39575`
