@@ -182,4 +182,4 @@ user@Backdoor:/home/user$ python3 CVE-2021-4034.py
 ```
 
 Just like that, we have become _root_:
-![Root screenshot](root.png)
+![Root screenshot](screenshots/root.png)
