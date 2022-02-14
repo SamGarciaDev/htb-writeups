@@ -168,7 +168,7 @@ user@Backdoor:/home/user$ find / -perm -u=s 2>/dev/null
 /usr/bin/pkexec
 ```
 
-We can see that the binary _pkexec_ is available, which has been compromised recently under the _CVE-2021-4034_.
+We can see that the binary _pkexec_ is available, which has been compromised recently under the _CVE-2021-4034_ vulnerability.
 There are many exploits out there, I have used [this one](https://github.com/Almorabea/pkexec-exploit).
 Now it's simply a matter of setting up a Python server so you can share the file with the victim's machine and run it.
 
