@@ -56,7 +56,7 @@ PORT     STATE         SERVICE  VERSION
 5353/udp open|filtered zeroconf
 ```
 
-Only port 5353/udp shows up, running a service called zeroconf which doesn't seem vulnerable.
+Only port 5353/udp shows up, running a service called **zeroconf** which doesn't seem vulnerable.
 
 Finally, I try to enumerate subdomains, alas, nothing comes up.
 
